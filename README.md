@@ -18,7 +18,7 @@
 
 ```bash
 # 进入项目根目录
-cd ga_platform
+cd Prompt_Optimization_Based_on_Genetic_Algorithm
 
 # 安装依赖
 pip install django matplotlib
