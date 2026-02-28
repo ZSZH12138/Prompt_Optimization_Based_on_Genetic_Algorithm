@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt 优化结果展示</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #FAFAF9;
+            --surface: #FFFFFF;
+            --surface-code: #F7F6F4;
+            --border: #E8E6E3;
+            --border-light: #F0EEEB;
+            --text-primary: #1A1917;
+            --text-secondary: #6B6966;
+            --text-tertiary: #9C9A97;
+            --accent: #2C2C2B;
+            --accent-hover: #3D3D3B;
+            --success: #3A7D44;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 64px 24px 96px;
+        }
+
+        /* Header */
+        .page-header {
+            margin-bottom: 48px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+            text-decoration: none;
+            margin-bottom: 24px;
+            transition: color var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--text-secondary);
+        }
+
+        .back-link i {
+            width: 14px;
+            height: 14px;
+        }
+
+        .page-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .page-header .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .page-header .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        .card-icon i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .card-header-text h2 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+        }
+
+        .card-header-text .card-desc {
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+
+        /* Score Badge */
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--accent);
+            color: #FFFFFF;
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            margin-bottom: 20px;
+        }
+
+        .score-badge i {
+            width: 14px;
+            height: 14px;
+        }
+
+        .score-value {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Code Block */
+        .prompt-block {
+            background: var(--surface-code);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 20px 24px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .prompt-block::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .prompt-block::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .prompt-block::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* Chart Image */
+        .chart-wrapper {
+            width: 100%;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            background: var(--surface-code);
+        }
+
+        .chart-wrapper img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+        }
+
+        .btn-back:hover {
+            border-color: var(--border-focus, #C5C2BD);
+            box-shadow: var(--shadow-md);
+            background: var(--bg);
+        }
+
+        .btn-back i {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 40px 16px 72px;
+            }
+
+            .card {
+                padding: 24px 20px;
+            }
+
+            .page-header {
+                margin-bottom: 32px;
+            }
+
+            .page-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .prompt-block {
+                padding: 16px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <header class="page-header">
+        <a href="/" class="back-link">
+            <i data-lucide="arrow-left"></i>
+            返回优化页面
+        </a>
+        <div class="brand">
+            <div class="brand-icon">
+                <i data-lucide="bar-chart-2" style="width:18px;height:18px;"></i>
+            </div>
+            <h1>优化结果分析</h1>
+        </div>
+        <p class="subtitle">遗传算法迭代完成，以下为最终评估报告</p>
+    </header>
+
+    <!-- Best Prompt Card -->
+    <section class="card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i data-lucide="award"></i>
+            </div>
+            <div class="card-header-text">
+                <h2>最优 Prompt</h2>
+                <span class="card-desc">种群终代最高得分个体</span>
+            </div>
+        </div>
+
+        <div class="score-badge">
+            <i data-lucide="trophy"></i>
+            Score
+            <span class="score-value">{{ best_prompt.score }}</span>
+        </div>
+
+        <div class="prompt-block">{{ best_prompt.raw_prompt }}</div>
+    </section>
+
+    <!-- Fitness Evolution Card -->
+    <section class="card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i data-lucide="trending-up"></i>
+            </div>
+            <div class="card-header-text">
+                <h2>适应度演化</h2>
+                <span class="card-desc">种群最高分与平均分的代际变化趋势</span>
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <img src="/static/optimizer/{{ fitness_img }}" alt="适应度演化图">
+        </div>
+    </section>
+
+    <!-- Score Distribution Card -->
+    <section class="card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i data-lucide="box-select"></i>
+            </div>
+            <div class="card-header-text">
+                <h2>分数分布</h2>
+                <span class="card-desc">不同代际的种群分数箱线图</span>
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <img src="/static/optimizer/{{ boxplot_img }}" alt="分数分布箱线图">
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        <a href="/" class="btn-back">
+            <i data-lucide="rotate-ccw"></i>
+            开始新的优化
+        </a>
+    </footer>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+});
+</script>
+
+</body>
+</html>
